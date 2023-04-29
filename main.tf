@@ -1,6 +1,7 @@
-
-
-// Create s3 bucket
+#####################
+##### S3 Bucket #####
+#####################
+# Create s3 bucket
 resource "aws_s3_bucket" "ct_sri_bucket" {
   bucket = var.s3_bucket_prefix
   tags = {
@@ -40,7 +41,7 @@ data "aws_iam_policy_document" "cfn_access_policy" {
 }
 
 
-// Block public access to bucket
+# Block public access to bucket
 resource "aws_s3_bucket_public_access_block" "ct_sri_bucket_access" {
   bucket = aws_s3_bucket.ct_sri_bucket.id
 
@@ -50,7 +51,7 @@ resource "aws_s3_bucket_public_access_block" "ct_sri_bucket_access" {
   restrict_public_buckets = true 
 }
 
-// Default server side encryption "aws/s3" key is  applied
+# Default server side encryption "aws/s3" key is  applied
 resource "aws_s3_bucket_server_side_encryption_configuration" "ct_sri_bucket_encryption" {
   bucket = aws_s3_bucket.ct_sri_bucket.id
 
@@ -62,7 +63,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "ct_sri_bucket_enc
   }
 }
 
-// Static website hosting
+# Static website hosting
 resource "aws_s3_bucket_website_configuration" "ct_sri_bucket_static_website" {
   bucket = aws_s3_bucket.ct_sri_bucket.id
 
@@ -75,12 +76,12 @@ resource "aws_s3_bucket_website_configuration" "ct_sri_bucket_static_website" {
   }
 }
 
-// uploading index.html object
+# uploading index.html object
 resource "aws_s3_object" "index_object" {
   bucket = aws_s3_bucket.ct_sri_bucket.id
   key    = "index.html"
   source = "./index.html"
-  server_side_encryption = "aws:kms"
+  server_side_encryption = "AES256"
 
   # The filemd5() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
@@ -88,12 +89,12 @@ resource "aws_s3_object" "index_object" {
   etag = filemd5("./index.html")
 }
 
-// uploading error.html object
+# uploading error.html object
 resource "aws_s3_object" "error_object" {
   bucket = aws_s3_bucket.ct_sri_bucket.id
   key    = "error.html"
   source = "./error.html"
-  server_side_encryption = "aws:kms"
+  server_side_encryption = "AES256"
 
   # The filemd5() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
@@ -120,7 +121,7 @@ resource "aws_acm_certificate" "ssl_certificate" {
 #### CLOUDFRONT #####
 ###################
 
-// Origin Access ID for s3
+# Origin Access ID for s3
 resource "aws_cloudfront_origin_access_control" "ct_sri_oai" {
   name                              = "ct_sri_oai"
   description                       = "Access Policy for s3 access"
