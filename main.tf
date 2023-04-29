@@ -15,6 +15,7 @@ resource "aws_s3_bucket_policy" "ct_sri_bucket_policy" {
   policy = data.aws_iam_policy_document.cfn_access_policy.json
 }
 
+# bucket access policy to allow cloudfront distribution access
 data "aws_iam_policy_document" "cfn_access_policy" {
   statement {
     effect = "Allow"
@@ -51,7 +52,7 @@ resource "aws_s3_bucket_public_access_block" "ct_sri_bucket_access" {
   restrict_public_buckets = true 
 }
 
-# Default server side encryption "aws/s3" key is  applied
+# Default server side encryption "AES256" key is  applied
 resource "aws_s3_bucket_server_side_encryption_configuration" "ct_sri_bucket_encryption" {
   bucket = aws_s3_bucket.ct_sri_bucket.id
 
@@ -63,7 +64,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "ct_sri_bucket_enc
   }
 }
 
-# Static website hosting
+# Static website hosting configuration and serving index.html
 resource "aws_s3_bucket_website_configuration" "ct_sri_bucket_static_website" {
   bucket = aws_s3_bucket.ct_sri_bucket.id
 
@@ -134,6 +135,7 @@ locals {
   s3_origin_id = aws_s3_bucket.ct_sri_bucket.bucket_regional_domain_name
 }
 
+# main cloudfront distribution
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name              = aws_s3_bucket.ct_sri_bucket.bucket_regional_domain_name
@@ -213,6 +215,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 }
 
 #### Route53 #######
+# updating route53 record to point at cloudfront created above
 resource "aws_route53_record" "r53_cloudfront" {
   zone_id = var.r53_zone_id
   name    = var.r53_domain_name
